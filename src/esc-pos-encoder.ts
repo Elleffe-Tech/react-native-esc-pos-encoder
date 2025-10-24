@@ -1,27 +1,62 @@
-const iconv = require('iconv-lite');
-const linewrap = require('linewrap');
-const {createCanvas} = require('canvas');
-const Dither = require('canvas-dither');
-const Flatten = require('canvas-flatten');
+import iconv from 'iconv-lite';
+// @ts-ignore
+import * as linewrap from 'linewrap';
+import {createCanvas, Canvas} from 'canvas';
+// @ts-ignore
+import Dither from 'canvas-dither';
+// @ts-ignore
+import Flatten from 'canvas-flatten';
+
+// Type definitions
+type Codepage =
+  | 'cp437' | 'cp737' | 'cp850' | 'cp775' | 'cp852' | 'cp855' | 'cp857' | 'cp858'
+  | 'cp860' | 'cp861' | 'cp862' | 'cp863' | 'cp864' | 'cp865' | 'cp866' | 'cp869'
+  | 'cp936' | 'cp949' | 'cp950' | 'cp1252' | 'iso88596' | 'shiftjis' | 'windows874'
+  | 'windows1250' | 'windows1251' | 'windows1252' | 'windows1253' | 'windows1254'
+  | 'windows1255' | 'windows1256' | 'windows1257' | 'windows1258';
+
+type Alignment = 'left' | 'center' | 'right';
+
+type Size = 'small' | 'normal' | 'wide' | 'tall' | 'double';
+
+type Symbology =
+  | 'upca' | 'upce' | 'ean13' | 'ean8' | 'code39' | 'coda39' | 'itf' | 'codabar'
+  | 'code93' | 'code128' | 'gs1-128' | 'gs1-databar-omni' | 'gs1-databar-truncated'
+  | 'gs1-databar-limited' | 'gs1-databar-expanded' | 'code128-auto';
+
+type ErrorLevel = 'l' | 'm' | 'q' | 'h';
+
+type CutType = 'full' | 'partial';
+
+type DitherAlgorithm = 'threshold' | 'bayer' | 'floydsteinberg' | 'atkinson';
+
+interface PrinterState {
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  hanzi: boolean;
+}
 
 
 /**
  * Create a byte stream based on commands for ESC/POS printers
  */
-class EscPosEncoder {
+export default class EscPosEncoder {
+  private _buffer!: (number | Uint8Array | Buffer)[];
+  private _codepage!: string;
+  private _state!: PrinterState;
+
   /**
-     * Create a new object
-     *
-    */
+   * Create a new object
+   */
   constructor() {
     this._reset();
   }
 
   /**
-     * Reset the state of the object
-     *
-    */
-  _reset() {
+   * Reset the state of the object
+   */
+  private _reset(): void {
     this._buffer = [];
     this._codepage = 'ascii';
 
@@ -34,33 +69,30 @@ class EscPosEncoder {
   }
 
   /**
-     * Encode a string with the current code page
-     *
-     * @param  {string}   value  String to encode
-     * @return {object}          Encoded string as a ArrayBuffer
-     *
-    */
-  _encode(value) {
+   * Encode a string with the current code page
+   *
+   * @param value String to encode
+   * @return Encoded string as a Buffer
+   */
+  private _encode(value: string): Buffer {
     return iconv.encode(value, this._codepage);
   }
 
   /**
-     * Add commands to the buffer
-     *
-     * @param  {array}   value  And array of numbers, arrays, buffers or Uint8Arrays to add to the buffer
-     *
-    */
-  _queue(value) {
+   * Add commands to the buffer
+   *
+   * @param value An array of numbers, arrays, buffers or Uint8Arrays to add to the buffer
+   */
+  private _queue(value: (number | Uint8Array | Buffer)[]): void {
     value.forEach((item) => this._buffer.push(item));
   }
 
   /**
-     * Initialize the printer
-     *
-     * @return {object}          Return the object, for easy chaining commands
-     *
-     */
-  initialize() {
+   * Initialize the printer
+   *
+   * @return Return the object, for easy chaining commands
+   */
+  initialize(): this {
     this._queue([
       0x1b, 0x40,
     ]);
@@ -69,14 +101,13 @@ class EscPosEncoder {
   }
 
   /**
-     * Change the code page
-     *
-     * @param  {string}   value  The codepage that we set the printer to
-     * @return {object}          Return the object, for easy chaining commands
-     *
-     */
-  codepage(value) {
-    const codepages = {
+   * Change the code page
+   *
+   * @param value The codepage that we set the printer to
+   * @return Return the object, for easy chaining commands
+   */
+  codepage(value: Codepage): this {
+    const codepages: Record<Codepage, [number, boolean]> = {
       'cp437': [0x00, false],
       'cp737': [0x40, false],
       'cp850': [0x02, false],
@@ -111,15 +142,15 @@ class EscPosEncoder {
       'windows1258': [0x5e, false],
     };
 
-    let codepage;
+    let codepage: string;
 
     if (!iconv.encodingExists(value)) {
       throw new Error('Unknown codepage');
     }
 
-    if (value in iconv.encodings) {
-      if (typeof iconv.encodings[value] === 'string') {
-        codepage = iconv.encodings[value];
+    if (value in (iconv as any).encodings) {
+      if (typeof (iconv as any).encodings[value] === 'string') {
+        codepage = (iconv as any).encodings[value];
       } else {
         codepage = value;
       }
@@ -127,12 +158,12 @@ class EscPosEncoder {
       throw new Error('Unknown codepage');
     }
 
-    if (typeof codepages[codepage] !== 'undefined') {
+    if (typeof codepages[codepage as Codepage] !== 'undefined') {
       this._codepage = codepage;
-      this._state.hanzi = codepages[codepage][1];
+      this._state.hanzi = codepages[codepage as Codepage][1];
 
       this._queue([
-        0x1b, 0x74, codepages[codepage][0],
+        0x1b, 0x74, codepages[codepage as Codepage][0],
       ]);
     } else {
       throw new Error('Codepage not supported by printer');
@@ -142,14 +173,13 @@ class EscPosEncoder {
   }
 
   /**
-     * Print text
-     *
-     * @param  {string}   value  Text that needs to be printed
-     * @param  {number}   wrap   Wrap text after this many positions
-     * @return {object}          Return the object, for easy chaining commands
-     *
-     */
-  text(value, wrap) {
+   * Print text
+   *
+   * @param value Text that needs to be printed
+   * @param wrap Wrap text after this many positions
+   * @return Return the object, for easy chaining commands
+   */
+  text(value: string, wrap?: number): this {
     if (wrap) {
       const w = linewrap(wrap, {lineBreak: '\r\n'});
       value = w(value);
@@ -171,12 +201,11 @@ class EscPosEncoder {
   }
 
   /**
-     * Print a newline
-     *
-     * @return {object}          Return the object, for easy chaining commands
-     *
-     */
-  newline() {
+   * Print a newline
+   *
+   * @return Return the object, for easy chaining commands
+   */
+  newline(): this {
     this._queue([
       0x0a, 0x0d,
     ]);
@@ -185,14 +214,13 @@ class EscPosEncoder {
   }
 
   /**
-     * Print text, followed by a newline
-     *
-     * @param  {string}   value  Text that needs to be printed
-     * @param  {number}   wrap   Wrap text after this many positions
-     * @return {object}          Return the object, for easy chaining commands
-     *
-     */
-  line(value, wrap) {
+   * Print text, followed by a newline
+   *
+   * @param value Text that needs to be printed
+   * @param wrap Wrap text after this many positions
+   * @return Return the object, for easy chaining commands
+   */
+  line(value: string, wrap?: number): this {
     this.text(value, wrap);
     this.newline();
 
@@ -200,18 +228,17 @@ class EscPosEncoder {
   }
 
   /**
-     * Underline text
-     *
-     * @param  {boolean|number}   value  true to turn on underline, false to turn off, or 2 for double underline
-     * @return {object}                  Return the object, for easy chaining commands
-     *
-     */
-  underline(value) {
+   * Underline text
+   *
+   * @param value true to turn on underline, false to turn off, or 2 for double underline
+   * @return Return the object, for easy chaining commands
+   */
+  underline(value?: boolean | number): this {
     if (typeof value === 'undefined') {
-      value = ! this._state.underline;
+      value = !this._state.underline;
     }
 
-    this._state.underline = value;
+    this._state.underline = Boolean(value);
 
     this._queue([
       0x1b, 0x2d, Number(value),
@@ -221,15 +248,14 @@ class EscPosEncoder {
   }
 
   /**
-     * Italic text
-     *
-     * @param  {boolean}          value  true to turn on italic, false to turn off
-     * @return {object}                  Return the object, for easy chaining commands
-     *
-     */
-  italic(value) {
+   * Italic text
+   *
+   * @param value true to turn on italic, false to turn off
+   * @return Return the object, for easy chaining commands
+   */
+  italic(value?: boolean): this {
     if (typeof value === 'undefined') {
-      value = ! this._state.italic;
+      value = !this._state.italic;
     }
 
     this._state.italic = value;
@@ -242,18 +268,17 @@ class EscPosEncoder {
   }
 
   /**
-     * Bold text
-     *
-     * @param  {boolean}          value  true to turn on bold, false to turn off, or 2 for double underline
-     * @return {object}                  Return the object, for easy chaining commands
-     *
-     */
-  bold(value) {
+   * Bold text
+   *
+   * @param value true to turn on bold, false to turn off, or 2 for double underline
+   * @return Return the object, for easy chaining commands
+   */
+  bold(value?: boolean | number): this {
     if (typeof value === 'undefined') {
-      value = ! this._state.bold;
+      value = !this._state.bold;
     }
 
-    this._state.bold = value;
+    this._state.bold = Boolean(value);
 
     this._queue([
       0x1b, 0x45, Number(value),
@@ -263,13 +288,12 @@ class EscPosEncoder {
   }
 
   /**
-     * Change text size
-     *
-     * @param  {string}          e   small, normal, wide, tall, double
-     * @return {object}                  Return the object, for easy chaining commands
-     *
-     */
-  size(e) {
+   * Change text size
+   *
+   * @param e small, normal, wide, tall, double
+   * @return Return the object, for easy chaining commands
+   */
+  size(e: Size): this {
     let font = 0; // default: Font A
     let scale = 0x00; // default: normal size
 
@@ -297,14 +321,13 @@ class EscPosEncoder {
   }
 
   /**
-     * Change text alignment
-     *
-     * @param  {string}          value   left, center or right
-     * @return {object}                  Return the object, for easy chaining commands
-     *
-     */
-  align(value) {
-    const alignments = {
+   * Change text alignment
+   *
+   * @param value left, center or right
+   * @return Return the object, for easy chaining commands
+   */
+  align(value: Alignment): this {
+    const alignments: Record<Alignment, number> = {
       'left': 0x00,
       'center': 0x01,
       'right': 0x02,
@@ -322,16 +345,15 @@ class EscPosEncoder {
   }
 
   /**
-     * Barcode
-     *
-     * @param  {string}           value  the value of the barcode
-     * @param  {string}           symbology  the type of the barcode
-     * @param  {number}           height  height of the barcode
-     * @return {object}                  Return the object, for easy chaining commands
-     *
-     */
-  barcode(value, symbology, height) {
-    const symbologies = {
+   * Barcode
+   *
+   * @param value the value of the barcode
+   * @param symbology the type of the barcode
+   * @param height height of the barcode
+   * @return Return the object, for easy chaining commands
+   */
+  barcode(value: string, symbology: Symbology, height: number): this {
+    const symbologies: Record<Symbology, number> = {
       'upca': 0x00,
       'upce': 0x01,
       'ean13': 0x02,
@@ -392,16 +414,15 @@ class EscPosEncoder {
   }
 
   /**
-     * QR code
-     *
-     * @param  {string}           value  the value of the qr code
-     * @param  {number}           model  model of the qrcode, either 1 or 2
-     * @param  {number}           size   size of the qrcode, a value between 1 and 8
-     * @param  {string}           errorlevel  the amount of error correction used, either 'l', 'm', 'q', 'h'
-     * @return {object}                  Return the object, for easy chaining commands
-     *
-     */
-  qrcode(value, model, size, errorlevel) {
+   * QR code
+   *
+   * @param value the value of the qr code
+   * @param model model of the qrcode, either 1 or 2
+   * @param size size of the qrcode, a value between 1 and 8
+   * @param errorlevel the amount of error correction used, either 'l', 'm', 'q', 'h'
+   * @return Return the object, for easy chaining commands
+   */
+  qrcode(value: string, model?: 1 | 2, size?: number, errorlevel?: ErrorLevel): this {
     /* Force printing the print buffer and moving to a new line */
 
     this._queue([
@@ -410,7 +431,7 @@ class EscPosEncoder {
 
     /* Model */
 
-    const models = {
+    const models: Record<1 | 2, number> = {
       1: 0x31,
       2: 0x32,
     };
@@ -447,7 +468,7 @@ class EscPosEncoder {
 
     /* Error level */
 
-    const errorlevels = {
+    const errorlevels: Record<ErrorLevel, number> = {
       'l': 0x30,
       'm': 0x31,
       'q': 0x32,
@@ -485,17 +506,16 @@ class EscPosEncoder {
   }
 
   /**
-     * Image
-     *
-     * @param  {object}         element  an element, like a canvas or image that needs to be printed
-     * @param  {number}         width  width of the image on the printer
-     * @param  {number}         height  height of the image on the printer
-     * @param  {string}         algorithm  the dithering algorithm for making the image black and white
-     * @param  {number}         threshold  threshold for the dithering algorithm
-     * @return {object}                  Return the object, for easy chaining commands
-     *
-     */
-  image(element, width, height, algorithm, threshold) {
+   * Image
+   *
+   * @param element an element, like a canvas or image that needs to be printed
+   * @param width width of the image on the printer
+   * @param height height of the image on the printer
+   * @param algorithm the dithering algorithm for making the image black and white
+   * @param threshold threshold for the dithering algorithm
+   * @return Return the object, for easy chaining commands
+   */
+  image(element: Canvas | any, width: number, height: number, algorithm?: DitherAlgorithm, threshold?: number): this {
     if (width % 8 !== 0) {
       throw new Error('Width must be a multiple of 8');
     }
@@ -526,7 +546,7 @@ class EscPosEncoder {
       case 'atkinson': image = Dither.atkinson(image); break;
     }
 
-    const getPixel = (x, y) => image.data[((width * y) + x) * 4] > 0 ? 0 : 1;
+    const getPixel = (x: number, y: number): number => image.data[((width * y) + x) * 4] > 0 ? 0 : 1;
 
     const bytes = new Uint8Array((width * height) >> 3);
 
@@ -556,13 +576,12 @@ class EscPosEncoder {
   }
 
   /**
-     * Cut paper
-     *
-     * @param  {string}          value   full or partial. When not specified a full cut will be assumed
-     * @return {object}                  Return the object, for easy chaining commands
-     *
-     */
-  cut(value) {
+   * Cut paper
+   *
+   * @param value full or partial. When not specified a full cut will be assumed
+   * @return Return the object, for easy chaining commands
+   */
+  cut(value?: CutType): this {
     let data = 0x00;
 
     if (value == 'partial') {
@@ -577,25 +596,23 @@ class EscPosEncoder {
   }
 
   /**
-     * Add raw printer commands
-     *
-     * @param  {array}           data   raw bytes to be included
-     * @return {object}          Return the object, for easy chaining commands
-     *
-     */
-  raw(data) {
+   * Add raw printer commands
+   *
+   * @param data raw bytes to be included
+   * @return Return the object, for easy chaining commands
+   */
+  raw(data: (number | Uint8Array | Buffer)[]): this {
     this._queue(data);
 
     return this;
   }
 
   /**
-     * Encode all previous commands
-     *
-     * @return {Uint8Array}         Return the encoded bytes
-     *
-     */
-  encode() {
+   * Encode all previous commands
+   *
+   * @return Return the encoded bytes
+   */
+  encode(): Uint8Array {
     let length = 0;
 
     this._buffer.forEach((item) => {
@@ -625,5 +642,3 @@ class EscPosEncoder {
     return result;
   }
 }
-
-module.exports = EscPosEncoder;

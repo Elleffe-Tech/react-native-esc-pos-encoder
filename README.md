@@ -8,18 +8,37 @@ First, install the package using npm:
 
     npm install react-native-esc-pos-encoder --save
 
-Then, require the package and use it like so:
+Then, import the package and use it like so:
 
-    let EscPosEncoder = require('react-native-esc-pos-encoder');
+### TypeScript/ES Modules
 
-    let encoder = new EscPosEncoder();
+```typescript
+import EscPosEncoder from 'react-native-esc-pos-encoder';
 
-    let result = encoder
-        .initialize()
-        .text('The quick brown fox jumps over the lazy dog')
-        .newline()
-        .qrcode('https://example.com')
-        .encode();
+const encoder = new EscPosEncoder();
+
+const result = encoder
+    .initialize()
+    .text('The quick brown fox jumps over the lazy dog')
+    .newline()
+    .qrcode('https://example.com')
+    .encode();
+```
+
+### CommonJS (Legacy)
+
+```javascript
+const EscPosEncoder = require('react-native-esc-pos-encoder');
+
+const encoder = new EscPosEncoder();
+
+const result = encoder
+    .initialize()
+    .text('The quick brown fox jumps over the lazy dog')
+    .newline()
+    .qrcode('https://example.com')
+    .encode();
+```
 
 All commands can be chained, except for `encode()` which will return the result as an Uint8Array which contains all the bytes that need to be send to the printer.
 
