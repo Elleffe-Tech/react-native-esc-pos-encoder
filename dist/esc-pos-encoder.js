@@ -37,12 +37,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const iconv_lite_1 = __importDefault(require("iconv-lite"));
-// @ts-ignore
 const linewrap = __importStar(require("linewrap"));
 const canvas_1 = require("canvas");
-// @ts-ignore
 const canvas_dither_1 = __importDefault(require("canvas-dither"));
-// @ts-ignore
 const canvas_flatten_1 = __importDefault(require("canvas-flatten"));
 /**
  * Create a byte stream based on commands for ESC/POS printers

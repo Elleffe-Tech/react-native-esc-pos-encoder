@@ -1,10 +1,7 @@
 import iconv from 'iconv-lite';
-// @ts-ignore
 import * as linewrap from 'linewrap';
 import {createCanvas, Canvas} from 'canvas';
-// @ts-ignore
 import Dither from 'canvas-dither';
-// @ts-ignore
 import Flatten from 'canvas-flatten';
 
 // Type definitions
