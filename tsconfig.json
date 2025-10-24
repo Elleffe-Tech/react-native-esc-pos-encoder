@@ -24,5 +24,16 @@
     "strict": true,
     "target": "esnext",
     "outDir": "lib"
-  }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "lib",
+    "dist",
+    "test",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
 }

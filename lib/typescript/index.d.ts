@@ -156,4 +156,3 @@ export default class EscPosEncoder {
     encode(): Uint8Array;
 }
 export {};
-//# sourceMappingURL=esc-pos-encoder.d.ts.map
