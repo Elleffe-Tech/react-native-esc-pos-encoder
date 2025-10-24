@@ -1,0 +1,46 @@
+{
+  "name": "react-native-esc-pos-encoder",
+  "version": "1.0.0",
+  "description": "Create a set of commands that can be send to any receipt printer that supports ESC/POS for React Native",
+  "main": "src/esc-pos-encoder.js",
+  "scripts": {
+    "bundle": "browserify src/esc-pos-encoder.js --standalone EscPosEncoder -o dist/esc-pos-encoder.js",
+    "uglify": "terser dist/esc-pos-encoder.js -cm --overwrite -o dist/esc-pos-encoder.js",
+    "build": "npm run bundle && npm run uglify",
+    "lint": "eslint --fix src/esc-pos-encoder.js",
+    "mocha": "mocha test/",
+    "test": "npm run lint && npm run mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Elleffe-Tech/react-native-esc-pos-encoder.git"
+  },
+  "keywords": [
+    "pos",
+    "escpos",
+    "receipt",
+    "printer"
+  ],
+  "author": "Francesco Clementi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Elleffe-Tech/react-native-esc-pos-encoder/issues"
+  },
+  "homepage": "https://github.com/Elleffe-Tech/react-native-esc-pos-encoder#readme",
+  "devDependencies": {
+    "browserify": "^16.5.2",
+    "chai": "^4.2.0",
+    "eslint": "^7.7.0",
+    "eslint-config-google": "^0.14.0",
+    "mocha": "^8.1.1",
+    "terser": "^5.44.0"
+  },
+  "dependencies": {
+    "buffer-to-uint8array": "^1.1.0",
+    "canvas": "^2.6.0",
+    "canvas-dither": "^1.0.0",
+    "canvas-flatten": "^1.0.0",
+    "iconv-lite": "^0.6.2",
+    "linewrap": "^0.2.1"
+  }
+}
