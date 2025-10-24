@@ -20,6 +20,9 @@
     "type": "git",
     "url": "git+https://github.com/Elleffe-Tech/react-native-esc-pos-encoder.git"
   },
+  "files": [
+    "lib"
+  ],
   "keywords": [
     "pos",
     "escpos",
