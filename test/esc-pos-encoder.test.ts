@@ -1,7 +1,7 @@
-import EscPosEncoder from '../src/esc-pos-encoder';
-import { createCanvas } from 'canvas';
+import EscPosEncoder from '../src/index';
+import {createCanvas} from 'canvas';
 
-import * as chai from 'chai';  
+import * as chai from 'chai';
 const assert = chai.assert;
 const expect = chai.expect;
 const should = chai.should();

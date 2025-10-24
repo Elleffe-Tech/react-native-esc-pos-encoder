@@ -1,8 +1,8 @@
 import iconv from 'iconv-lite';
-import * as linewrap from 'linewrap';
+const linewrap = require('linewrap');
 import {createCanvas, Canvas} from 'canvas';
-import Dither from 'canvas-dither';
-import Flatten from 'canvas-flatten';
+const Dither = require('canvas-dither');
+const Flatten = require('canvas-flatten');
 
 // Type definitions
 type Codepage =
@@ -545,7 +545,7 @@ export default class EscPosEncoder {
       case 'atkinson': image = Dither.atkinson(image); break;
     }
 
-    const getPixel = (x: number, y: number): number => image.data[((width * y) + x) * 4] > 0 ? 0 : 1;
+    const getPixel = (x: number, y: number): number => (image.data?.[((width * y) + x) * 4] ?? 0) > 0 ? 0 : 1;
 
     const bytes = new Uint8Array((width * height) >> 3);
 
