@@ -1,6 +1,6 @@
 {
   "name": "react-native-esc-pos-encoder",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Create a set of commands that can be send to any receipt printer that supports ESC/POS for React Native",
   "main": "dist/esc-pos-encoder.js",
   "module": "dist/esc-pos-encoder.js",
