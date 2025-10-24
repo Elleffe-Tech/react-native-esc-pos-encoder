@@ -9,7 +9,8 @@
     "build": "npm run bundle && npm run uglify",
     "lint": "eslint --fix src/esc-pos-encoder.js",
     "mocha": "mocha test/",
-    "test": "npm run lint && npm run mocha"
+    "test": "npm run lint && npm run mocha",
+    "release": "release-it"
   },
   "repository": {
     "type": "git",
@@ -28,11 +29,13 @@
   },
   "homepage": "https://github.com/Elleffe-Tech/react-native-esc-pos-encoder#readme",
   "devDependencies": {
+    "@release-it/conventional-changelog": "^10.0.1",
     "browserify": "^16.5.2",
     "chai": "^4.2.0",
     "eslint": "^7.7.0",
     "eslint-config-google": "^0.14.0",
     "mocha": "^8.1.1",
+    "release-it": "^19.0.5",
     "terser": "^5.44.0"
   },
   "dependencies": {
