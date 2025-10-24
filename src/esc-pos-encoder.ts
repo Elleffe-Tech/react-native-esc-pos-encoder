@@ -220,8 +220,10 @@ export default class EscPosEncoder {
    * @param wrap Wrap text after this many positions
    * @return Return the object, for easy chaining commands
    */
-  line(value: string, wrap?: number): this {
-    this.text(value, wrap);
+  line(value?: string, wrap?: number): this {
+    if (value !== undefined) {
+      this.text(value, wrap);
+    }
     this.newline();
 
     return this;
@@ -642,3 +644,4 @@ export default class EscPosEncoder {
     return result;
   }
 }
+

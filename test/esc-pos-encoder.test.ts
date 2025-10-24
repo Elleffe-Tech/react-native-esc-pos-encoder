@@ -1,4 +1,4 @@
-import EscPosEncoder from '../src/esc-pos-encoder.ts';
+import EscPosEncoder from '../src/esc-pos-encoder';
 import { createCanvas } from 'canvas';
 
 import * as chai from 'chai';  

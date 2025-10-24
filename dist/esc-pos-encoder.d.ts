@@ -68,7 +68,7 @@ export default class EscPosEncoder {
      * @param wrap Wrap text after this many positions
      * @return Return the object, for easy chaining commands
      */
-    line(value: string, wrap?: number): this;
+    line(value?: string, wrap?: number): this;
     /**
      * Underline text
      *

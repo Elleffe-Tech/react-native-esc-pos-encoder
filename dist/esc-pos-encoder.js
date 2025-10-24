@@ -1,15 +1,53 @@
-import iconv from 'iconv-lite';
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const iconv_lite_1 = __importDefault(require("iconv-lite"));
 // @ts-ignore
-import * as linewrap from 'linewrap';
-import { createCanvas } from 'canvas';
+const linewrap = __importStar(require("linewrap"));
+const canvas_1 = require("canvas");
 // @ts-ignore
-import Dither from 'canvas-dither';
+const canvas_dither_1 = __importDefault(require("canvas-dither"));
 // @ts-ignore
-import Flatten from 'canvas-flatten';
+const canvas_flatten_1 = __importDefault(require("canvas-flatten"));
 /**
  * Create a byte stream based on commands for ESC/POS printers
  */
-export default class EscPosEncoder {
+class EscPosEncoder {
     /**
      * Create a new object
      */
@@ -36,7 +74,7 @@ export default class EscPosEncoder {
      * @return Encoded string as a Buffer
      */
     _encode(value) {
-        return iconv.encode(value, this._codepage);
+        return iconv_lite_1.default.encode(value, this._codepage);
     }
     /**
      * Add commands to the buffer
@@ -99,12 +137,12 @@ export default class EscPosEncoder {
             'windows1258': [0x5e, false],
         };
         let codepage;
-        if (!iconv.encodingExists(value)) {
+        if (!iconv_lite_1.default.encodingExists(value)) {
             throw new Error('Unknown codepage');
         }
-        if (value in iconv.encodings) {
-            if (typeof iconv.encodings[value] === 'string') {
-                codepage = iconv.encodings[value];
+        if (value in iconv_lite_1.default.encodings) {
+            if (typeof iconv_lite_1.default.encodings[value] === 'string') {
+                codepage = iconv_lite_1.default.encodings[value];
             }
             else {
                 codepage = value;
@@ -169,7 +207,9 @@ export default class EscPosEncoder {
      * @return Return the object, for easy chaining commands
      */
     line(value, wrap) {
-        this.text(value, wrap);
+        if (value !== undefined) {
+            this.text(value, wrap);
+        }
         this.newline();
         return this;
     }
@@ -300,7 +340,7 @@ export default class EscPosEncoder {
             'code128-auto': 0x55,
         };
         if (symbology in symbologies) {
-            const bytes = iconv.encode(value, 'ascii');
+            const bytes = iconv_lite_1.default.encode(value, 'ascii');
             this._queue([
                 0x1d, 0x68, height,
                 0x1d, 0x77, symbology === 'code39' ? 0x02 : 0x03,
@@ -398,7 +438,7 @@ export default class EscPosEncoder {
             throw new Error('Error level must be l, m, q or h');
         }
         /* Data */
-        const bytes = iconv.encode(value, 'iso88591');
+        const bytes = iconv_lite_1.default.encode(value, 'iso88591');
         const length = bytes.length + 3;
         this._queue([
             0x1d, 0x28, 0x6b, length % 0xff, length / 0xff, 0x31, 0x50, 0x30, bytes,
@@ -432,23 +472,23 @@ export default class EscPosEncoder {
         if (typeof threshold === 'undefined') {
             threshold = 128;
         }
-        const canvas = createCanvas(width, height);
+        const canvas = (0, canvas_1.createCanvas)(width, height);
         const context = canvas.getContext('2d');
         context.drawImage(element, 0, 0, width, height);
         let image = context.getImageData(0, 0, width, height);
-        image = Flatten.flatten(image, [0xff, 0xff, 0xff]);
+        image = canvas_flatten_1.default.flatten(image, [0xff, 0xff, 0xff]);
         switch (algorithm) {
             case 'threshold':
-                image = Dither.threshold(image, threshold);
+                image = canvas_dither_1.default.threshold(image, threshold);
                 break;
             case 'bayer':
-                image = Dither.bayer(image, threshold);
+                image = canvas_dither_1.default.bayer(image, threshold);
                 break;
             case 'floydsteinberg':
-                image = Dither.floydsteinberg(image);
+                image = canvas_dither_1.default.floydsteinberg(image);
                 break;
             case 'atkinson':
-                image = Dither.atkinson(image);
+                image = canvas_dither_1.default.atkinson(image);
                 break;
         }
         const getPixel = (x, y) => image.data[((width * y) + x) * 4] > 0 ? 0 : 1;
@@ -532,4 +572,5 @@ export default class EscPosEncoder {
         return result;
     }
 }
+exports.default = EscPosEncoder;
 //# sourceMappingURL=esc-pos-encoder.js.map

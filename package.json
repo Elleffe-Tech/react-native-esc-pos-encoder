@@ -5,7 +5,6 @@
   "main": "dist/esc-pos-encoder.js",
   "module": "dist/esc-pos-encoder.js",
   "types": "dist/esc-pos-encoder.d.ts",
-  "type": "module",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
